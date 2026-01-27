@@ -4,15 +4,12 @@
 
 ## What I Need From You
 
-### For Next Session - Event Data
-Please prepare the following for each of the 4 events:
-1. **Event name** (e.g., "Quick Session", "Classic Banya")
-2. **Description** (a few sentences about the event)
-3. **Photo** (image file to upload)
-4. **Price** (in your currency)
-5. **Duration** (e.g., 30min, 1h, 2h)
-6. **Calendly URL** (the booking link for each event)
-7. **Any extra metadata** (max guests, what's included, etc.)
+### Photos for Events (Optional)
+
+You can add photos to events by either:
+
+1. **Manual URL** - Edit each event in admin panel, paste a photo URL
+2. **Upload feature** - We can add Supabase Storage upload in next session
 
 ### Accounts & Credentials
 
@@ -27,44 +24,51 @@ Please prepare the following for each of the 4 events:
 | Telegram bot token   | Done | In `.env.local`                  |
 | Google account       | Need | For calendar sync (via Calendly) |
 
-### Setup Tasks
-
-- [x] Create Calendly Account
-- [x] Create Calendly Event Types
-- [x] Create Telegram Bot
-- [x] Configure Calendly Webhook (local dev via ngrok)
-- [ ] **Add Calendly Custom Questions** (optional but recommended)
-  - "Phone number" (text, required)
-  - "Number of guests" (dropdown: 1-8)
-- [ ] **Connect Google Calendar to Calendly**
-- [ ] **Create Supabase Admin User** for admin panel login (optional)
-
 ---
 
 ## Things Working Now
 
 1. **Telegram Mini App** - http://localhost:3000
-   - Event selection page with 3 events
-   - Calendly iframe embed for booking
+   - Fetches events dynamically from Supabase
+   - Shows all 4 events with prices, duration, max guests
+   - Calendly booking embedded for each event
 
 2. **Calendly Webhook** - Receiving bookings
    - Webhook URL: `https://inherently-national-leopard.ngrok-free.app/api/calendly/webhook`
    - Bookings sync to Supabase automatically
 
 3. **Admin Panel** - http://localhost:3001
-   - Bookings list with filters
-   - Mark Paid button (works!)
-   - Booking details with payment management
+   - **Events page** (`/dashboard/events`) - NEW!
+     - View all events from database
+     - Inline edit: name, price, duration, max guests, description
+     - Toggle active/inactive status
+     - "Book" link - test booking flow
+     - "Manage" link - edit in Calendly
+     - Delete events
+   - **Bookings page** - view bookings, mark paid
+   - **Booking details** - payment management
+
+---
+
+## Events in Database
+
+The following 4 events were synced from Calendly:
+
+| Event | Price | Duration | Max Guests |
+|-------|-------|----------|------------|
+| Аренда бани без пармастера | €340 | 4h | 8 |
+| Программа Бережная баня (с пармастером) | €500 | 4h | 8 |
+| Разовое посещение - женщины | €60 | 4h | 1 |
+| Разовое посещение - мужчины | €60 | 4h | 1 |
 
 ---
 
 ## What's Coming Next
 
-**Events Management Admin Interface:**
-- Table to store event types in Supabase
-- Admin UI to create/edit/delete events
-- Photo upload for each event
-- Dynamic event display in Telegram app
+**Optional improvements:**
+- Photo upload for events (Supabase Storage)
+- "Sync from Calendly" button
+- Deploy to Vercel
 
 ---
 
@@ -80,6 +84,7 @@ Please prepare the following for each of the 4 events:
 ### Supabase
 - All keys in `.env.local` for both apps
 - Service role key needed for server actions
+- Events table created with 4 events
 
 ---
 

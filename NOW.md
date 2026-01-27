@@ -3,36 +3,47 @@
 > **Update this file at the end of each session** to track where we left off.
 
 ## Last Updated
-2026-01-27 - Calendly webhook working, admin panel payment buttons fixed
+2026-01-27 - Events management implemented, dynamic events working
 
 ## Current Phase
-**Events Management** - Create admin interface for managing event types
+**Events Management Complete** - Ready for photo uploads and deployment
+
+---
+
+## What Was Completed This Session
+
+### 1. Events Table Created in Supabase
+- Created `events` table with: id, name, slug, description, photo_url, price, duration, calendly_url, metadata, display_order, is_active
+- Migration: `supabase/migrations/20260127000003_events_table.sql`
+- Seeded with 4 events from Calendly
+
+### 2. Admin Events Management Page
+- Built at `/dashboard/events`
+- Scrollable table with all events
+- Inline editing (name, price, duration, max guests, description)
+- Toggle active/inactive status
+- Links to Calendly: "Book" (test booking) and "Manage" (edit in Calendly)
+- Delete events
+
+### 3. Telegram App Uses Dynamic Events
+- Refactored to server components fetching from Supabase
+- Events displayed with photos, prices, duration, max guests
+- Book page fetches event by slug from database
 
 ---
 
 ## Next Steps (In Order)
 
-### 1. Create Events Table in Supabase
-Create a new `events` table to store event types with:
-- id, name, slug, description
-- photo_url (for uploaded images)
-- price, duration
-- calendly_url (booking link)
-- metadata (JSONB for extra info)
-- display_order, is_active
+### 1. Photo Upload for Events
+- Add Supabase Storage bucket for event photos
+- Add photo upload UI in admin events page
+- Update photo_url in events table
 
-### 2. Build Events Admin Interface
-Create a scrollable admin view where each row is an event:
-- Editable fields: name, description, price, duration, calendly_url
-- Photo upload cell
-- Metadata editor
-- Save/delete actions
-- Drag to reorder (optional)
+### 2. Sync Events from Calendly (Optional)
+- Add "Sync from Calendly" button to fetch new events
+- Useful when new event types are created in Calendly
 
-### 3. Update Telegram App to Use Dynamic Events
-Replace hardcoded events in `apps/telegram-app/src/app/page.tsx` with data from Supabase events table.
-
-### 4. Deploy to Vercel
+### 3. Deploy to Vercel
 - [ ] Deploy `apps/telegram-app`
 - [ ] Deploy `apps/admin`
 - [ ] Set all environment variables in Vercel
@@ -41,27 +52,27 @@ Replace hardcoded events in `apps/telegram-app/src/app/page.tsx` with data from 
 ---
 
 ## Blocked On
-Nothing - ready to build events management
+Nothing - ready for photo uploads or deployment
 
 ---
 
 ## Recently Completed
-- [x] Calendly webhook configured and working
-- [x] Webhook subscription created via API
-- [x] SUPABASE_SERVICE_ROLE_KEY added to env files
-- [x] Mark Paid button added to bookings table
-- [x] Payment form fixed with server actions (RLS bypass)
-- [x] Renamed "View" to "Details" in bookings table
-- [x] Booking flow tested end-to-end
+- [x] Events table created with Calendly data
+- [x] Admin events page with inline editing
+- [x] Calendly links (Book/Manage) in events table
+- [x] Telegram app fetches events from Supabase
+- [x] Both apps build successfully
 
 ---
 
 ## Notes for Next Session
 
-User will provide 4 events to create with:
-- Descriptions
-- Photos
-- Metadata
-- Booking URLs
+The 4 events from Calendly are now in the database:
+1. Аренда бани без пармастера (4ч, €340)
+2. Программа Бережная баня с пармастером (4ч, €500)
+3. Разовое посещение по субботам - женщины (4ч, €60)
+4. Разовое посещение по субботам - мужчины (4ч, €60)
 
-Admin interface should be a single scrollable view with editable rows for each event.
+To add photos, either:
+- Set up Supabase Storage and add upload UI
+- Or manually add photo URLs to the database via admin panel edit
