@@ -2,6 +2,9 @@ import { createClient } from "@supabase/supabase-js";
 import { BookingPage } from "./BookingPage";
 import { notFound } from "next/navigation";
 
+// Revalidate every 60 seconds to pick up changes from admin panel
+export const revalidate = 60;
+
 function getSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

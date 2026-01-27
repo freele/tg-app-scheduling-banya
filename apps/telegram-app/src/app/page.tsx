@@ -1,6 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 import { EventsList } from "@/components/EventsList";
 
+// Revalidate every 60 seconds to pick up changes from admin panel
+export const revalidate = 60;
+
 // Create a Supabase client for server-side fetching
 function getSupabase() {
   return createClient(
