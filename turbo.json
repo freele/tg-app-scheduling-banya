@@ -1,6 +1,5 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDotEnv": [".env.local", ".env"],
   "globalPassThroughEnv": [
     "NEXT_PUBLIC_SUPABASE_URL",
     "NEXT_PUBLIC_SUPABASE_ANON_KEY",
@@ -20,8 +19,7 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true,
-      "dotEnv": [".env.local", ".env"]
+      "persistent": true
     },
     "lint": {
       "dependsOn": ["^build"]
