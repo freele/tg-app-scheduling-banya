@@ -12,9 +12,9 @@ interface EventsListProps {
 function formatDuration(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  if (hours === 0) return `${mins} min`;
-  if (mins === 0) return `${hours} hour${hours > 1 ? "s" : ""}`;
-  return `${hours}h ${mins}min`;
+  if (hours === 0) return `${mins} мин`;
+  if (mins === 0) return `${hours} ч`;
+  return `${hours}ч ${mins}мин`;
 }
 
 function formatPrice(price: number | null, currency: string): string {
@@ -27,7 +27,6 @@ export function EventsList({ events }: EventsListProps) {
   const { webApp, user } = useTelegram();
 
   useEffect(() => {
-    // Suppress MetaMask/wallet detection errors from third-party scripts
     const handleError = (event: PromiseRejectionEvent) => {
       if (event.reason?.message?.includes("MetaMask")) {
         event.preventDefault();
@@ -38,8 +37,6 @@ export function EventsList({ events }: EventsListProps) {
     if (webApp) {
       webApp.ready();
       webApp.expand();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (webApp as any).setHeaderColor?.("secondary_bg_color");
     }
 
     return () => {
@@ -49,75 +46,117 @@ export function EventsList({ events }: EventsListProps) {
 
   return (
     <main className="min-h-screen flex flex-col bg-tg-secondary-bg">
-      <header className="p-4 pb-2 bg-tg-bg">
-        <h1 className="text-xl font-bold text-center">Banya Portugal</h1>
-        {user && (
-          <p className="text-sm text-tg-hint text-center mt-1">
-            Welcome, {user.firstName}!
+      {/* Header */}
+      <header className="bg-tg-bg px-4 pt-4 pb-6">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-tg-text">🧖 Баня на даче</h1>
+          {user && (
+            <p className="text-tg-hint text-sm mt-1">
+              Привет, {user.firstName}!
+            </p>
+          )}
+          <p className="text-tg-hint text-xs mt-2">
+            Португалия • Традиционная русская баня
           </p>
-        )}
-        <p className="text-sm text-tg-hint text-center mt-2">
-          Choose your session type
-        </p>
+        </div>
       </header>
 
-      <div className="flex-1 p-4 space-y-3">
+      {/* Events List */}
+      <div className="flex-1 px-4 pb-4 space-y-3">
         {events.length === 0 && (
           <div className="text-center text-tg-hint py-8">
-            No events available
+            Нет доступных программ
           </div>
         )}
+
         {events.map((event) => (
           <Link
             key={event.id}
             href={`/book/${event.slug}`}
-            className="block bg-tg-bg rounded-xl p-4 shadow-sm active:scale-[0.98] transition-transform"
+            className="block active:opacity-80 transition-opacity"
           >
-            <div className="flex gap-3">
+            <div className="bg-tg-bg rounded-2xl overflow-hidden shadow-sm">
+              {/* Photo or Gradient Header */}
               {event.photo_url ? (
-                <img
-                  src={event.photo_url}
-                  alt={event.name}
-                  className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-                />
-              ) : (
-                <div
-                  className="w-16 h-16 rounded-lg flex items-center justify-center text-white font-bold flex-shrink-0"
-                  style={{ backgroundColor: event.color || "#6B7280" }}
-                >
-                  {event.name.slice(0, 2).toUpperCase()}
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1 min-w-0">
-                    <h2 className="font-semibold text-base leading-tight line-clamp-2">
+                <div className="relative h-40">
+                  <img
+                    src={event.photo_url}
+                    alt={event.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+
+                  {/* Price on photo */}
+                  <div className="absolute top-3 right-3 bg-tg-button text-tg-button-text px-3 py-1 rounded-full text-sm font-bold">
+                    {formatPrice(event.price, event.currency)}
+                  </div>
+
+                  {/* Title on photo */}
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <h2 className="text-white font-bold text-lg leading-tight">
                       {event.name}
                     </h2>
-                    <p className="text-sm text-tg-hint mt-1">
-                      {formatDuration(event.duration)}
-                      {event.max_guests && event.max_guests > 1
-                        ? ` · up to ${event.max_guests} guests`
-                        : ""}
-                    </p>
                   </div>
-                  <span className="text-lg font-bold text-tg-button ml-2 flex-shrink-0">
-                    {formatPrice(event.price, event.currency)}
-                  </span>
                 </div>
+              ) : (
+                <div
+                  className="relative h-24 flex items-center justify-center"
+                  style={{
+                    background: `linear-gradient(135deg, ${event.color || '#8B5A2B'} 0%, ${event.color ? event.color + 'aa' : '#D2691E'} 100%)`
+                  }}
+                >
+                  <span className="text-4xl">🧖</span>
+
+                  {/* Price */}
+                  <div className="absolute top-3 right-3 bg-white/90 text-gray-900 px-3 py-1 rounded-full text-sm font-bold">
+                    {formatPrice(event.price, event.currency)}
+                  </div>
+                </div>
+              )}
+
+              {/* Content */}
+              <div className="p-4">
+                {!event.photo_url && (
+                  <h2 className="font-bold text-tg-text text-base leading-tight mb-2">
+                    {event.name}
+                  </h2>
+                )}
+
+                {/* Meta */}
+                <div className="flex items-center gap-3 text-tg-hint text-sm mb-2">
+                  <span>⏱ {formatDuration(event.duration)}</span>
+                  {event.max_guests && event.max_guests > 1 && (
+                    <span>👥 до {event.max_guests} чел.</span>
+                  )}
+                </div>
+
+                {/* Description */}
                 {event.description_plain && (
-                  <p className="text-sm text-tg-hint mt-2 line-clamp-2">
+                  <p className="text-tg-text text-sm leading-relaxed opacity-80">
                     {event.description_plain}
                   </p>
                 )}
+
+                {/* Book Button */}
+                <div className="mt-3 pt-3 border-t border-tg-secondary-bg flex items-center justify-between">
+                  <span className="text-tg-hint text-xs">
+                    Нажмите для бронирования
+                  </span>
+                  <div className="bg-tg-button text-tg-button-text px-4 py-2 rounded-xl text-sm font-medium">
+                    Выбрать →
+                  </div>
+                </div>
               </div>
             </div>
           </Link>
         ))}
       </div>
 
-      <footer className="p-4 text-center text-xs text-tg-hint">
-        Traditional Russian banya in Portugal
+      {/* Footer */}
+      <footer className="p-4 text-center bg-tg-bg border-t border-tg-secondary-bg">
+        <p className="text-tg-hint text-xs">
+          🇵🇹 Баня на даче • Португалия
+        </p>
       </footer>
     </main>
   );

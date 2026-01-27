@@ -87,19 +87,35 @@ bania/
 │       │   └── database.types.ts
 │       └── migrations/
 │           └── 001_initial_schema.sql
+├── scripts/                    # Utility scripts
+│   └── upload-event-photos.mjs # Bulk upload photos to events
+├── supabase/                   # Database migrations
+│   └── migrations/
 ├── .mcp.json                   # MCP server config (gitignored)
 ├── .env.example
 ├── pnpm-workspace.yaml
 ├── turbo.json
+├── Makefile                    # Dev shortcuts (make free-ports)
 └── package.json
 ```
 
 ## Database Schema
 
-Single table: `bookings` (synced from Calendly webhooks)
+### `events` table (event types from Calendly)
 
 ```sql
--- Key columns:
+id, name, slug, description_plain, description_html
+photo_url              -- Stored in Supabase Storage (event-photos bucket)
+price, currency        -- e.g., 340.00, 'EUR'
+duration               -- Minutes
+calendly_url           -- Booking link
+calendly_event_uri     -- Calendly API reference
+max_guests, display_order, is_active, color, metadata
+```
+
+### `bookings` table (synced from Calendly webhooks)
+
+```sql
 calendly_event_uri      -- Unique Calendly reference
 calendly_invitee_uri    -- Unique invitee reference
 event_type_name         -- "Bania Session 2h"
@@ -111,6 +127,10 @@ payment_status          -- 'pending' | 'paid' | 'refunded'
 payment_amount          -- Decimal amount
 calendly_payload        -- Full webhook payload (JSONB)
 ```
+
+### Supabase Storage
+
+- **Bucket**: `event-photos` (public, max 5MB, jpeg/png/webp/gif)
 
 ## Key Design Decisions
 
@@ -155,7 +175,31 @@ Edit `apps/telegram-app/src/app/api/calendly/webhook/route.ts`:
 - `extractGuestsCount()` - extracts guest count
 
 ### Update payment tracking
+
 Edit `apps/admin/src/app/dashboard/bookings/[id]/PaymentForm.tsx`
+
+## Utility Scripts
+
+Scripts in `scripts/` directory for common operations:
+
+### upload-event-photos.mjs
+
+Bulk upload photos to events from Unsplash URLs.
+
+```bash
+cd apps/admin && node ../../scripts/upload-event-photos.mjs
+```
+
+- Downloads images from Unsplash (free to use)
+- Removes old photos from Supabase Storage
+- Uploads new photos and updates database
+- Edit `PHOTOS` array in the script to change images
+
+## Makefile Commands
+
+```bash
+make free-ports    # Kill processes on ports 3000 and 3001
+```
 
 ## Status
 
@@ -166,6 +210,10 @@ Edit `apps/admin/src/app/dashboard/bookings/[id]/PaymentForm.tsx`
 - [x] Calendly webhook handler
 - [x] Admin panel with payment tracking
 - [x] MCP server configured
+- [x] Events table with Calendly sync
+- [x] Events management in admin (CRUD, photo upload)
+- [x] Supabase Storage for event photos
+- [x] Telegram Mini App fetches events from DB
 - [ ] Deploy to Vercel
 - [ ] Configure Calendly webhooks in production
 - [ ] Set up Telegram bot webhooks

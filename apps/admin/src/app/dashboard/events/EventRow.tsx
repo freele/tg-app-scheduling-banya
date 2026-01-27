@@ -265,7 +265,7 @@ export function EventRow({ event, onUpdate }: EventRowProps) {
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
               className="absolute -bottom-1 -right-1 w-5 h-5 bg-blue-500 text-white rounded-full text-xs flex items-center justify-center disabled:opacity-50"
-              title="Upload photo"
+              title="Upload photo (max 800x600, auto-resized)"
             >
               +
             </button>

@@ -1,6 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import sharp from "sharp";
+
+// Image settings
+const MAX_WIDTH = 800;
+const MAX_HEIGHT = 600;
+const QUALITY = 85;
 
 function getSupabase() {
   return createClient(
@@ -22,21 +28,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check file size (max 10MB before processing)
+    if (file.size > 10 * 1024 * 1024) {
+      return NextResponse.json(
+        { success: false, error: "File too large. Max 10MB." },
+        { status: 400 }
+      );
+    }
+
     const supabase = getSupabase();
 
-    // Create unique filename
-    const ext = file.name.split(".").pop();
-    const filename = `${eventId}-${Date.now()}.${ext}`;
-
-    // Convert File to ArrayBuffer then to Buffer for upload
+    // Convert File to Buffer
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const inputBuffer = Buffer.from(arrayBuffer);
+
+    // Resize and optimize image with sharp
+    const optimizedBuffer = await sharp(inputBuffer)
+      .resize(MAX_WIDTH, MAX_HEIGHT, {
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .jpeg({ quality: QUALITY })
+      .toBuffer();
+
+    // Create unique filename (always .jpg after optimization)
+    const filename = `${eventId}-${Date.now()}.jpg`;
 
     // Upload to Supabase Storage
     const { error: uploadError } = await supabase.storage
       .from("event-photos")
-      .upload(filename, buffer, {
-        contentType: file.type,
+      .upload(filename, optimizedBuffer, {
+        contentType: "image/jpeg",
         cacheControl: "3600",
         upsert: true,
       });

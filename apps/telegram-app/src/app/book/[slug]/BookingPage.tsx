@@ -13,9 +13,15 @@ interface BookingPageProps {
 function formatDuration(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  if (hours === 0) return `${mins} min`;
-  if (mins === 0) return `${hours} hour${hours > 1 ? "s" : ""}`;
-  return `${hours}h ${mins}min`;
+  if (hours === 0) return `${mins} мин`;
+  if (mins === 0) return `${hours} ч`;
+  return `${hours}ч ${mins}мин`;
+}
+
+function formatPrice(price: number | null, currency: string): string {
+  if (price === null) return "";
+  const symbol = currency === "EUR" ? "€" : currency;
+  return `${symbol}${price.toFixed(0)}`;
 }
 
 export function BookingPage({ event }: BookingPageProps) {
@@ -23,7 +29,6 @@ export function BookingPage({ event }: BookingPageProps) {
   const { webApp, user } = useTelegram();
 
   useEffect(() => {
-    // Suppress MetaMask errors
     const handleError = (e: PromiseRejectionEvent) => {
       if (e.reason?.message?.includes("MetaMask")) {
         e.preventDefault();
@@ -34,10 +39,7 @@ export function BookingPage({ event }: BookingPageProps) {
     if (webApp) {
       webApp.ready();
       webApp.expand();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (webApp as any).setHeaderColor?.("secondary_bg_color");
 
-      // Show back button
       webApp.BackButton.show();
       webApp.BackButton.onClick(() => router.back());
     }
@@ -48,25 +50,40 @@ export function BookingPage({ event }: BookingPageProps) {
     };
   }, [webApp, router]);
 
-  // Prefill with Telegram user info
   const prefill = user
     ? { name: [user.firstName, user.lastName].filter(Boolean).join(" ") }
     : undefined;
 
   return (
-    <main className="min-h-screen flex flex-col">
-      <header className="p-4 pb-2 bg-tg-bg border-b">
-        <button
-          onClick={() => router.back()}
-          className="text-tg-link text-sm mb-2"
-        >
-          ← Back
-        </button>
-        <h1 className="text-lg font-bold">{event.name}</h1>
-        <p className="text-sm text-tg-hint">{formatDuration(event.duration)}</p>
+    <main className="min-h-screen flex flex-col bg-tg-secondary-bg">
+      {/* Header */}
+      <header className="bg-tg-bg border-b border-tg-secondary-bg">
+        <div className="px-4 py-3">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-1 text-tg-link text-sm mb-2"
+          >
+            ← Назад
+          </button>
+
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg font-bold text-tg-text leading-tight">
+                {event.name}
+              </h1>
+              <p className="text-tg-hint text-sm mt-1">
+                ⏱ {formatDuration(event.duration)}
+              </p>
+            </div>
+            <div className="bg-tg-button text-tg-button-text px-3 py-1.5 rounded-xl text-sm font-bold flex-shrink-0">
+              {formatPrice(event.price, event.currency)}
+            </div>
+          </div>
+        </div>
       </header>
 
-      <div className="flex-1">
+      {/* Calendly Embed */}
+      <div className="flex-1 bg-white">
         <CalendlyEmbed
           url={event.calendly_url}
           prefill={prefill}
