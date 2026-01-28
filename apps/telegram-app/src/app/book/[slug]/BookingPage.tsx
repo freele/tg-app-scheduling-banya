@@ -87,6 +87,7 @@ export function BookingPage({ event }: BookingPageProps) {
         <CalendlyEmbed
           url={event.calendly_url}
           prefill={prefill}
+          telegramUserId={user?.id}
           className="h-full"
         />
       </div>

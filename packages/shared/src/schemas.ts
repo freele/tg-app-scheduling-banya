@@ -87,6 +87,15 @@ export const calendlyScheduledEventSchema = z.object({
   }),
 });
 
+export const calendlyTrackingSchema = z.object({
+  utm_source: z.string().nullable().optional(),
+  utm_medium: z.string().nullable().optional(),
+  utm_campaign: z.string().nullable().optional(),
+  utm_content: z.string().nullable().optional(),
+  utm_term: z.string().nullable().optional(),
+  salesforce_uuid: z.string().nullable().optional(),
+});
+
 export const calendlyInviteePayloadSchema = z.object({
   uri: z.string(),
   name: z.string(),
@@ -100,6 +109,7 @@ export const calendlyInviteePayloadSchema = z.object({
   reschedule_url: z.string(),
   questions_and_answers: z.array(calendlyQuestionSchema).default([]),
   scheduled_event: calendlyScheduledEventSchema,
+  tracking: calendlyTrackingSchema.optional(),
 });
 
 export const calendlyWebhookPayloadSchema = z.object({

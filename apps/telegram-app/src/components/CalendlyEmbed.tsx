@@ -9,6 +9,7 @@ interface CalendlyEmbedProps {
     email?: string;
     phone?: string;
   };
+  telegramUserId?: number;
   className?: string;
 }
 
@@ -24,7 +25,7 @@ declare global {
   }
 }
 
-export function CalendlyEmbed({ url, prefill, className }: CalendlyEmbedProps) {
+export function CalendlyEmbed({ url, prefill, telegramUserId, className }: CalendlyEmbedProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -41,6 +42,12 @@ export function CalendlyEmbed({ url, prefill, className }: CalendlyEmbedProps) {
         const params = new URLSearchParams();
         params.set("hide_gdpr_banner", "1");
         params.set("hide_landing_page_details", "1");
+
+        // Pass Telegram user ID via UTM for tracking in webhook
+        if (telegramUserId) {
+          params.set("utm_source", "telegram_miniapp");
+          params.set("utm_content", telegramUserId.toString());
+        }
 
         const fullUrl = `${url}?${params.toString()}`;
 

@@ -81,9 +81,21 @@ make free-ports
 
 ## What's Next
 
+- [ ] **Run migration** - Add `telegram_user_id` column (see SQL below)
 - [ ] Deploy to Vercel
 - [ ] Configure production webhooks
 - [ ] Test full flow in production
+
+### Migration to Run
+
+Run this SQL in [Supabase SQL Editor](https://supabase.com/dashboard/project/cqjkmzejtzqfpxwlulrt/sql):
+
+```sql
+-- Add Telegram user ID to bookings for messaging capability
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS telegram_user_id BIGINT;
+CREATE INDEX IF NOT EXISTS idx_bookings_telegram_user_id ON bookings(telegram_user_id);
+COMMENT ON COLUMN bookings.telegram_user_id IS 'Telegram user ID for direct messaging (from Mini App bookings)';
+```
 
 ---
 

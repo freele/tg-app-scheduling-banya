@@ -4,15 +4,34 @@
 
 ## Last Updated
 
-2026-01-27 - Photo upload complete, utility scripts added
+2026-01-28 - Telegram user tracking for messaging capability
 
 ## Current Phase
 
-**Events Management Complete** - Ready for deployment
+**Telegram Messaging Feature** - Ready for deployment (migration needed)
 
 ---
 
 ## What Was Completed This Session
+
+### 1. Telegram User ID Tracking
+
+Added ability to capture Telegram user ID when booking through Mini App, enabling messaging:
+
+- Migration: `packages/supabase/migrations/002_add_telegram_user_id.sql`
+- CalendlyEmbed passes `telegram_user_id` via UTM parameters
+- Webhook extracts and stores `telegram_user_id` in bookings table
+- Admin panel shows Telegram indicator and user ID
+
+### 2. Calendly Widget Improvements (Previous Session)
+
+- Switched to official Calendly widget.js
+- Added `hide_gdpr_banner=1` to reduce cookie prompts
+- Added webhook management script
+
+---
+
+## Previous Session Work
 
 ### 1. Photo Upload Feature
 
@@ -49,17 +68,25 @@ Found and uploaded banya-themed photos from Unsplash:
 
 ## Next Steps (In Order)
 
-### 1. Deploy to Vercel
+### 1. Run Database Migration
+
+Run in Supabase SQL Editor:
+
+```sql
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS telegram_user_id BIGINT;
+CREATE INDEX IF NOT EXISTS idx_bookings_telegram_user_id ON bookings(telegram_user_id);
+```
+
+### 2. Deploy to Vercel
 
 - [ ] Deploy `apps/telegram-app`
 - [ ] Deploy `apps/admin`
 - [ ] Set all environment variables in Vercel
-- [ ] Update Calendly webhook URL to production
 
-### 2. Configure Production Webhooks
+### 3. Webhooks Already Configured
 
-- [ ] Update Calendly webhook to production URL
-- [ ] Set up Telegram bot webhook
+- Calendly webhook: pointing to production
+- Use `make webhook URL=<url>` to update if needed
 
 ---
 
@@ -71,14 +98,15 @@ Nothing - ready for deployment
 
 ## Recently Completed
 
+- [x] **Telegram user ID tracking** for messaging capability
+- [x] Official Calendly widget integration
+- [x] Webhook management script (`make webhook URL=...`)
 - [x] Events table with Calendly data
 - [x] Admin events page with inline editing
 - [x] Supabase Storage for event photos
 - [x] Photo upload API with Sharp resize
 - [x] Uploaded banya-themed photos for all 4 events
 - [x] Telegram Mini App with native theme
-- [x] Utility script for bulk photo uploads
-- [x] CLAUDE.md updated with scripts docs
 
 ---
 

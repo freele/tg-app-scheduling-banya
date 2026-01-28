@@ -77,6 +77,19 @@ function extractGuestsCount(
   return 1;
 }
 
+// Extract Telegram user ID from tracking data
+function extractTelegramUserId(
+  tracking?: { utm_source?: string | null; utm_content?: string | null }
+): number | null {
+  if (tracking?.utm_source === "telegram_miniapp" && tracking?.utm_content) {
+    const userId = parseInt(tracking.utm_content, 10);
+    if (!isNaN(userId) && userId > 0) {
+      return userId;
+    }
+  }
+  return null;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const rawBody = await request.text();
@@ -111,6 +124,7 @@ export async function POST(request: NextRequest) {
       // New booking created
       const phone = extractPhone(payload.questions_and_answers);
       const guestsCount = extractGuestsCount(payload.questions_and_answers);
+      const telegramUserId = extractTelegramUserId(payload.tracking);
 
       const { error } = await getSupabase().from("bookings").insert({
         calendly_event_uri: payload.event,
@@ -122,6 +136,7 @@ export async function POST(request: NextRequest) {
         invitee_name: payload.name,
         invitee_email: payload.email,
         invitee_phone: phone,
+        telegram_user_id: telegramUserId,
         guests_count: guestsCount,
         status: "scheduled",
         payment_status: "pending",
