@@ -4,6 +4,7 @@ import { calendlyWebhookPayloadSchema } from "@bania/shared";
 import crypto from "crypto";
 
 const calendlyWebhookKey = process.env.CALENDLY_WEBHOOK_SIGNING_KEY;
+const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
 
 // Lazy client initialization to avoid build-time errors
 let supabase: SupabaseClient | null = null;
@@ -90,6 +91,54 @@ function extractTelegramUserId(
   return null;
 }
 
+// Format date for message
+function formatDateTime(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleString("ru-RU", {
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Lisbon",
+  });
+}
+
+// Send Telegram message to user
+async function sendTelegramMessage(
+  chatId: number,
+  text: string
+): Promise<boolean> {
+  if (!telegramBotToken) {
+    console.warn("TELEGRAM_BOT_TOKEN not set, skipping message");
+    return false;
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.telegram.org/bot${telegramBotToken}/sendMessage`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text,
+          parse_mode: "HTML",
+        }),
+      }
+    );
+
+    const result = await response.json();
+    if (!result.ok) {
+      console.error("Telegram API error:", result);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Failed to send Telegram message:", error);
+    return false;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const rawBody = await request.text();
@@ -158,6 +207,31 @@ export async function POST(request: NextRequest) {
       }
 
       console.log(`Booking created: ${payload.name} - ${payload.scheduled_event.name}`);
+
+      // Send confirmation message via Telegram
+      if (telegramUserId) {
+        const firstName = payload.name.split(" ")[0];
+        const dateTime = formatDateTime(payload.scheduled_event.start_time);
+        const eventName = payload.scheduled_event.name;
+
+        const message = `Здравствуйте, ${firstName}! 🌿
+
+Рады, что вы выбрали нашу баню! Ваша бронь подтверждена:
+
+📅 ${eventName}
+🕐 ${dateTime}
+
+Для завершения бронирования, пожалуйста, оплатите сумму в течение 24 часов.
+
+💳 Реквизиты для оплаты:
+[PLACEHOLDER: реквизиты]
+
+После оплаты пришлите, пожалуйста, чек @PLACEHOLDER_CONTACT
+
+Ждём вас с нетерпением! 🙏`;
+
+        await sendTelegramMessage(telegramUserId, message);
+      }
     }
 
     if (event === "invitee.canceled") {
