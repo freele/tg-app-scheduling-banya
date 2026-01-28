@@ -195,10 +195,23 @@ cd apps/admin && node ../../scripts/upload-event-photos.mjs
 - Uploads new photos and updates database
 - Edit `PHOTOS` array in the script to change images
 
+### set-calendly-webhook.sh
+
+Set Calendly webhook URL for production or development.
+
+```bash
+./scripts/set-calendly-webhook.sh https://your-app.vercel.app/api/calendly/webhook
+```
+
+- Deletes existing webhooks
+- Creates new webhook with specified URL
+- Events: `invitee.created`, `invitee.canceled`
+
 ## Makefile Commands
 
 ```bash
-make free-ports    # Kill processes on ports 3000 and 3001
+make free-ports                        # Kill processes on ports 3000 and 3001
+make webhook URL=<webhook_url>         # Set Calendly webhook URL
 ```
 
 ## Status

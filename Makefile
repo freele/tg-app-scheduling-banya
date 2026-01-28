@@ -1,6 +1,6 @@
 # Bania Development Makefile
 
-.PHONY: free-ports dev build
+.PHONY: free-ports dev build webhook
 
 # Kill processes on development ports (3000, 3001)
 free-ports:
@@ -16,3 +16,8 @@ dev:
 # Build all apps
 build:
 	pnpm build
+
+# Set Calendly webhook URL
+# Usage: make webhook URL=https://your-app.vercel.app/api/calendly/webhook
+webhook:
+	@./scripts/set-calendly-webhook.sh $(URL)
