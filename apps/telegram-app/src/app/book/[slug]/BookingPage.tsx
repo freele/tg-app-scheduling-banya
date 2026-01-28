@@ -83,12 +83,12 @@ export function BookingPage({ event }: BookingPageProps) {
       </header>
 
       {/* Calendly Embed */}
-      <div className="flex-1 bg-white">
+      <div className="flex-1 bg-white min-h-0">
         <CalendlyEmbed
           url={event.calendly_url}
           prefill={prefill}
           telegramUserId={user?.id}
-          className="h-full"
+          className="h-full w-full"
         />
       </div>
     </main>

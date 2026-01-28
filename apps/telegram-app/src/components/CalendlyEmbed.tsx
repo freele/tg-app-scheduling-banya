@@ -108,7 +108,7 @@ export function CalendlyEmbed({ url, prefill, telegramUserId, className }: Calen
       style={{
         width: "100%",
         height: "100%",
-        minHeight: "700px",
+        minHeight: "calc(100vh - 100px)",
       }}
     />
   );
