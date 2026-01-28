@@ -27,17 +27,18 @@ declare global {
 
 export function CalendlyEmbed({ url, prefill, telegramUserId, className }: CalendlyEmbedProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
-    if (!url || !containerRef.current) return;
+    if (!url || !containerRef.current || initializedRef.current) return;
 
-    // Load Calendly script
-    const script = document.createElement("script");
-    script.src = "https://assets.calendly.com/assets/external/widget.js";
-    script.async = true;
+    const initWidget = () => {
+      if (window.Calendly && containerRef.current && !initializedRef.current) {
+        initializedRef.current = true;
 
-    script.onload = () => {
-      if (window.Calendly && containerRef.current) {
+        // Clear container before init
+        containerRef.current.innerHTML = "";
+
         // Build URL with parameters
         const params = new URLSearchParams();
         params.set("hide_gdpr_banner", "1");
@@ -59,20 +60,38 @@ export function CalendlyEmbed({ url, prefill, telegramUserId, className }: Calen
       }
     };
 
+    // Check if Calendly is already loaded
+    if (window.Calendly) {
+      initWidget();
+      return;
+    }
+
+    // Check if script is already in DOM
+    const existingScript = document.querySelector('script[src*="calendly.com/assets/external/widget.js"]');
+    if (existingScript) {
+      existingScript.addEventListener("load", initWidget);
+      return;
+    }
+
+    // Load Calendly script
+    const script = document.createElement("script");
+    script.src = "https://assets.calendly.com/assets/external/widget.js";
+    script.async = true;
+    script.onload = initWidget;
     document.head.appendChild(script);
 
-    // Load Calendly CSS
-    const link = document.createElement("link");
-    link.href = "https://assets.calendly.com/assets/external/widget.css";
-    link.rel = "stylesheet";
-    document.head.appendChild(link);
+    // Load Calendly CSS if not already loaded
+    if (!document.querySelector('link[href*="calendly.com/assets/external/widget.css"]')) {
+      const link = document.createElement("link");
+      link.href = "https://assets.calendly.com/assets/external/widget.css";
+      link.rel = "stylesheet";
+      document.head.appendChild(link);
+    }
 
     return () => {
-      // Cleanup
-      if (script.parentNode) script.parentNode.removeChild(script);
-      if (link.parentNode) link.parentNode.removeChild(link);
+      initializedRef.current = false;
     };
-  }, [url, prefill]);
+  }, [url, prefill, telegramUserId]);
 
   if (!url) {
     return (
