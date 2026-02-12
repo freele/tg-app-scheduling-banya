@@ -43,6 +43,8 @@ export function CalendlyEmbed({ url, prefill, telegramUserId, className }: Calen
         const params = new URLSearchParams();
         params.set("hide_gdpr_banner", "1");
         params.set("hide_landing_page_details", "1");
+        // Force timezone so Telegram WebView doesn't misdetect it
+        params.set("timezone", "Europe/Lisbon");
 
         // Pass Telegram user ID via UTM for tracking in webhook
         if (telegramUserId) {
