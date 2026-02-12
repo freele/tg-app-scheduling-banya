@@ -40,21 +40,15 @@ export function EventRow({ event, onUpdate }: EventRowProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
-    name: event.name,
     price: event.price?.toString() || "",
-    duration: event.duration.toString(),
     max_guests: event.max_guests?.toString() || "",
-    description_plain: event.description_plain || "",
   });
 
   const handleSave = async () => {
     setIsSaving(true);
     const result = await updateEvent(event.id, {
-      name: formData.name,
       price: formData.price ? parseFloat(formData.price) : null,
-      duration: parseInt(formData.duration),
       max_guests: formData.max_guests ? parseInt(formData.max_guests) : null,
-      description_plain: formData.description_plain || null,
     });
 
     if (result.success) {
@@ -151,22 +145,11 @@ export function EventRow({ event, onUpdate }: EventRowProps) {
           <div className="w-12 h-12" />
         </td>
         <td className="px-3 py-2 w-1/4 min-w-[200px]">
-          <input
-            type="text"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="w-full border rounded px-2 py-1 text-sm"
-          />
+          <p className="font-medium text-gray-900 text-sm">{event.name}</p>
+          <p className="text-xs text-gray-400">Synced from Calendly</p>
         </td>
         <td className="px-3 py-2 w-1/4 min-w-[200px]">
-          <textarea
-            value={formData.description_plain}
-            onChange={(e) =>
-              setFormData({ ...formData, description_plain: e.target.value })
-            }
-            className="w-full border rounded px-2 py-1 text-sm min-h-[60px]"
-            placeholder="Description..."
-          />
+          <p className="text-sm text-gray-500 italic">Synced from Calendly</p>
         </td>
         <td className="px-3 py-2">
           <div className="flex items-center gap-1">
@@ -181,15 +164,8 @@ export function EventRow({ event, onUpdate }: EventRowProps) {
             />
           </div>
         </td>
-        <td className="px-3 py-2">
-          <input
-            type="number"
-            value={formData.duration}
-            onChange={(e) =>
-              setFormData({ ...formData, duration: e.target.value })
-            }
-            className="w-16 border rounded px-2 py-1 text-sm"
-          />
+        <td className="px-3 py-2 text-sm text-gray-600">
+          {formatDuration(event.duration)}
         </td>
         <td className="px-3 py-2">
           <input

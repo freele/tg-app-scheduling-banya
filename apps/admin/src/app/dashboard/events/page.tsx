@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { createServerClient } from "@bania/supabase/server";
 import { EventsTable } from "./EventsTable";
+import { SyncButton } from "./SyncButton";
 
 export default async function EventsPage() {
   const cookieStore = await cookies();
@@ -20,14 +21,17 @@ export default async function EventsPage() {
             Manage event types synced from Calendly
           </p>
         </div>
-        <a
-          href="https://calendly.com/event_types/user/me"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="px-4 py-2 bg-purple-600 text-white rounded-md text-sm hover:bg-purple-700"
-        >
-          Open Calendly Dashboard
-        </a>
+        <div className="flex gap-2">
+          <SyncButton />
+          <a
+            href="https://calendly.com/event_types/user/me"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-purple-600 text-white rounded-md text-sm hover:bg-purple-700"
+          >
+            Open Calendly Dashboard
+          </a>
+        </div>
       </div>
 
       <EventsTable initialEvents={events || []} />
@@ -36,16 +40,15 @@ export default async function EventsPage() {
         <h3 className="font-medium text-blue-800 mb-2">How it works</h3>
         <ul className="text-sm text-blue-700 space-y-1">
           <li>
-            • Events are synced from Calendly - create new events in Calendly
-            first
+            • Create and edit events in Calendly, then click &quot;Sync from
+            Calendly&quot; to pull changes
           </li>
-          <li>• Edit prices, descriptions, and photos here for display</li>
+          <li>
+            • Name, description, and duration sync from Calendly automatically
+          </li>
+          <li>• Edit prices, photos, and max guests here in admin</li>
           <li>
             • Click &quot;Book&quot; to test the booking flow for each event
-          </li>
-          <li>
-            • Click &quot;Manage&quot; to edit availability and settings in
-            Calendly
           </li>
         </ul>
       </div>

@@ -175,6 +175,116 @@ export async function reorderEvents(eventIds: string[]) {
   return { success: true };
 }
 
+export async function syncEventsFromCalendly(): Promise<{
+  success: boolean;
+  error?: string;
+  created?: number;
+  updated?: number;
+  deactivated?: number;
+}> {
+  const token = process.env.CALENDLY_WEBHOOK_SIGNING_KEY;
+  if (!token) {
+    return { success: false, error: "CALENDLY_WEBHOOK_SIGNING_KEY is not set" };
+  }
+
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+
+  // 1. Get current user URI
+  const meRes = await fetch("https://api.calendly.com/users/me", { headers });
+  if (!meRes.ok) {
+    return { success: false, error: `Calendly API error: ${meRes.status}` };
+  }
+  const meData = await meRes.json();
+  const userUri = meData.resource.uri;
+
+  // 2. Fetch all event types
+  const etRes = await fetch(
+    `https://api.calendly.com/event_types?user=${encodeURIComponent(userUri)}&count=100&active=true`,
+    { headers }
+  );
+  if (!etRes.ok) {
+    return { success: false, error: `Calendly event_types error: ${etRes.status}` };
+  }
+  const etData = await etRes.json();
+  const calendlyEvents = etData.collection as Array<{
+    uri: string;
+    name: string;
+    slug: string;
+    scheduling_url: string;
+    duration: number;
+    description_plain: string | null;
+    description_html: string | null;
+    color: string;
+    active: boolean;
+  }>;
+
+  // 3. Fetch existing events from DB
+  const supabase = getSupabase();
+  const { data: existingEvents } = await supabase
+    .from("events")
+    .select("id, calendly_event_uri");
+
+  const existingMap = new Map(
+    (existingEvents || [])
+      .filter((e: { calendly_event_uri: string | null }) => e.calendly_event_uri)
+      .map((e: { id: string; calendly_event_uri: string | null }) => [e.calendly_event_uri!, e.id])
+  );
+
+  let created = 0;
+  let updated = 0;
+
+  const calendlyUris = new Set<string>();
+
+  for (const ce of calendlyEvents) {
+    calendlyUris.add(ce.uri);
+    const uuid = ce.uri.split("/").pop()!;
+
+    const syncData = {
+      name: ce.name,
+      slug: ce.slug,
+      duration: ce.duration,
+      description_plain: ce.description_plain || null,
+      description_html: ce.description_html || null,
+      calendly_url: ce.scheduling_url,
+      calendly_event_uri: ce.uri,
+      calendly_event_uuid: uuid,
+      color: ce.color,
+    };
+
+    const existingId = existingMap.get(ce.uri);
+
+    if (existingId) {
+      // Update existing
+      await supabase.from("events").update(syncData).eq("id", existingId);
+      updated++;
+    } else {
+      // Create new
+      const maxOrder = (existingEvents || []).length + created;
+      await supabase.from("events").insert({
+        ...syncData,
+        is_active: true,
+        display_order: maxOrder,
+      });
+      created++;
+    }
+  }
+
+  // 4. Deactivate events not in Calendly
+  let deactivated = 0;
+  for (const [uri, id] of existingMap) {
+    if (!calendlyUris.has(uri)) {
+      await supabase.from("events").update({ is_active: false }).eq("id", id);
+      deactivated++;
+    }
+  }
+
+  revalidatePath("/dashboard/events");
+  return { success: true, created, updated, deactivated };
+}
+
 export async function toggleEventActive(eventId: string, isActive: boolean) {
   const supabase = getSupabase();
 
