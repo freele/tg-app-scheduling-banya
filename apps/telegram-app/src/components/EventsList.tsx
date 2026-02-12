@@ -24,7 +24,7 @@ function formatPrice(price: number | null, currency: string): string {
 }
 
 export function EventsList({ events }: EventsListProps) {
-  const { webApp, user } = useTelegram();
+  const { webApp } = useTelegram();
 
   useEffect(() => {
     const handleError = (event: PromiseRejectionEvent) => {
@@ -50,13 +50,8 @@ export function EventsList({ events }: EventsListProps) {
       <header className="bg-tg-bg px-4 pt-4 pb-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-tg-text">🧖 Баня на даче</h1>
-          {user && (
-            <p className="text-tg-hint text-sm mt-1">
-              Привет, {user.firstName}!
-            </p>
-          )}
-          <p className="text-tg-hint text-xs mt-2">
-            Португалия • Традиционная русская баня
+          <p className="text-tg-text text-sm mt-2 leading-relaxed">
+            Привет! :) Здесь вы можете забронировать банные сеансы в &laquo;Бане на даче&raquo; на севере Португалии (50 минут от г. Порту).
           </p>
         </div>
       </header>
